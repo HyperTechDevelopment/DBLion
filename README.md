@@ -30,8 +30,8 @@
 
 | Get started | Go deeper |
 | --- | --- |
-| [Quick start](#quick-start) · [Supported databases](#supported-databases) · [What you can do](#what-you-can-do) | [Safety model](#safety-model) · [AI](#ai) · [Architecture](#architecture) |
-| [Development and tests](#development-and-tests) · [Project layout](#project-layout) | [Status and roadmap](#status-and-roadmap) · [Documentation](#documentation) |
+| [Quick start](#quick-start) · [Supported databases](#supported-databases) · [What you can do](#what-you-can-do) · [Themes](#themes) | [Safety model](#safety-model) · [AI](#ai) · [Data for debugging](#data-for-debugging) · [Architecture](#architecture) |
+| [Development and tests](#development-and-tests) · [Project layout](#project-layout) · [Data location](#data-location) | [Status and roadmap](#status-and-roadmap) · [Documentation](#documentation) |
 
 ## At a glance
 
@@ -135,6 +135,16 @@ The AI receives context and returns text. It has no path to the database; the on
 - Schema-aware Monaco autocomplete and optional AI inline completion.
 - Schema context trimmed to the request; table ranking uses names, column names and comments.
 - ER graph, skills and context preview.
+
+## Themes
+
+Bundled themes and fonts, no remote fetch. Switch anytime in Settings. The four below are real fullscreen captures of v0.1.0:
+
+| Dracula | PyCharm |
+| --- | --- |
+| ![DBLion in the Dracula theme](./docs/assets/theme-dracula.png) | ![DBLion in the PyCharm theme](./docs/assets/theme-pycharm.png) |
+| Solarized Light | Neon |
+| ![DBLion in the Solarized Light theme](./docs/assets/theme-solarized.png) | ![DBLion in the Neon theme](./docs/assets/theme-neon.png) |
 
 ## Safety model
 
@@ -267,6 +277,6 @@ Issues and pull requests are welcome. Keep changes small, run the checks above, 
 
 MIT — `SPDX-License-Identifier: MIT`. See [LICENSE](./LICENSE).
 
-Copyright (c) 2026 DBLion contributors. The license text is the canonical MIT text, unmodified. If you fork or redistribute, keep the copyright and permission notices in all copies or substantial portions.
+Copyright (c) 2026 Marcos Gabriel Moraes. The license text is the canonical MIT text, unmodified. If you fork or redistribute, keep the copyright and permission notices in all copies or substantial portions.
 
 <div align="center"><sub>DBLion 0.1.0 · guarded execution · multi-engine SQL</sub></div>

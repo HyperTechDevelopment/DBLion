@@ -30,8 +30,8 @@
 
 | Para começar | Para entender o projeto |
 | --- | --- |
-| [Início rápido](#início-rápido) · [Bancos suportados](#bancos-suportados) · [O que você pode fazer](#o-que-você-pode-fazer) | [Modelo de segurança](#modelo-de-segurança) · [IA](#ia) · [Arquitetura](#arquitetura) |
-| [Desenvolvimento e testes](#desenvolvimento-e-testes) · [Estrutura do projeto](#estrutura-do-projeto) | [Status e roadmap](#status-e-roadmap) · [Documentação](#documentação) |
+| [Início rápido](#início-rápido) · [Bancos suportados](#bancos-suportados) · [O que você pode fazer](#o-que-você-pode-fazer) · [Temas](#temas) | [Modelo de segurança](#modelo-de-segurança) · [IA](#ia) · [Dados para debug](#dados-para-debug) · [Arquitetura](#arquitetura) |
+| [Desenvolvimento e testes](#desenvolvimento-e-testes) · [Estrutura do projeto](#estrutura-do-projeto) · [Onde ficam os dados](#onde-ficam-os-dados) | [Status e roadmap](#status-e-roadmap) · [Documentação](#documentação) |
 
 ## Visão geral
 
@@ -136,6 +136,16 @@ A IA recebe contexto e devolve texto. Ela não tem caminho até o banco; o únic
 - Contexto de schema enxuto por request; ranking por nomes, colunas e comentários.
 - Grafo ER, skills e preview de contexto.
 
+## Temas
+
+Temas e fontes empacotados, sem fetch remoto. Troque a qualquer momento em Settings. Os quatro abaixo são capturas reais em tela cheia da v0.1.0:
+
+| Dracula | PyCharm |
+| --- | --- |
+| ![DBLion no tema Dracula](./docs/assets/theme-dracula.png) | ![DBLion no tema PyCharm](./docs/assets/theme-pycharm.png) |
+| Solarized Light | Neon |
+| ![DBLion no tema Solarized Light](./docs/assets/theme-solarized.png) | ![DBLion no tema Neon](./docs/assets/theme-neon.png) |
+
 ## Modelo de segurança
 
 | Camada | Controle |
@@ -230,8 +240,8 @@ src/main       Electron main: adapters, safety gates, AI context, storage
 src/preload    Typed contextBridge surface
 src/renderer   React UI, Monaco editor, schema explorer, AI panel
 src/shared     Types, SQL classification, access policy, Firebird URL helpers
-scripts        Automated test suites and test-only helpers
-docs           Capability matrix, Firebird notes and README assets
+scripts        Suítes de teste automatizadas e auxiliares de teste
+docs           Notas de capability, Firebird e assets do README
 ```
 
 Todo banco implementa `DbAdapter` em `src/main/db/types.ts`. Adicionar um significa um adapter, uma entrada em `src/main/db/index.ts` e testes de contrato. Veja [CONTRIBUTING.md](./CONTRIBUTING.md).
@@ -267,6 +277,6 @@ Issues e PRs são bem-vindos. Mantenha mudanças pequenas, rode os checks acima 
 
 MIT — `SPDX-License-Identifier: MIT`. Veja [LICENSE](./LICENSE).
 
-Copyright (c) 2026 DBLion contributors. Texto canônico MIT, sem modificação. Ao forkar ou redistribuir, mantenha os avisos de copyright e permissão em todas as cópias ou porções substanciais.
+Copyright (c) 2026 Marcos Gabriel Moraes. Texto canônico MIT, sem modificação. Ao forkar ou redistribuir, mantenha os avisos de copyright e permissão em todas as cópias ou porções substanciais.
 
 <div align="center"><sub>DBLion 0.1.0 · execução guardada · SQL multi-engine</sub></div>
