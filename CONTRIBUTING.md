@@ -126,9 +126,30 @@ Adapters must never bypass `ensureWritable`, the SQL classifier, the main-proces
 - Do not add a dependency for a problem that a small local helper can solve. Justify any new runtime dependency.
 - Keep main-process code free of renderer imports and keep the preload surface typed.
 
+## AI-assisted contributions
+
+AI-generated or AI-assisted code is welcome, including full drafts, under the same quality bar as human-written code:
+
+- You must review and understand every line you submit. Do not paste output you cannot explain.
+- All checks must pass; the safety invariants above are not waivable for AI-written code.
+- Declare the assistance in the pull request body, for example `Assisted-By: <tool>`, and note what you reviewed or changed manually.
+- Extra care in sensitive areas (`db/guard.ts`, `shared/access.ts`, `security.ts`, IPC handlers, secrets handling): changes to the execution, read-only or egress gates need a line-by-line justification, whoever or whatever wrote them.
+
+## Good first contributions
+
+If this is your first PR here, these need no database server and little context:
+
+- Documentation and translations (`README.md`, `README.pt-BR.md`, `CONTRIBUTING.md`, `ROADMAP.md`).
+- UI polish and new bundled themes (`src/renderer/src/themes.ts`).
+- Contract or unit tests for an adapter, using fakes or canned metadata.
+
+Open a draft pull request early when you want direction; unfinished work with a clear question is welcome.
+
 ## Commit and pull request guidelines
 
 - Work in a branch and keep one logical change per pull request.
+- Write pull requests and issues in English or Portuguese.
+- Documentation-only pull requests (docs, translations, themes) need only `npm run typecheck` and a text review; the live-test matrix does not apply.
 - Use an imperative subject, for example `fix(firebird): serialize plan preparation with queries`.
 - In the body, state what changed, why, which command proves it and any known limit.
 - Include screenshots or a short clip for UI changes.

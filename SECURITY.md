@@ -2,7 +2,11 @@
 
 ## Reporting
 
-Do not open a public issue for a vulnerability. Report it privately to the maintainers with a reproduction and the affected version. You will receive an acknowledgement and a coordinated disclosure timeline.
+Do not open a public issue for a vulnerability. Use [private vulnerability reporting](../../security/advisories/new) with a reproduction (steps, queries involved, redacted logs) and the affected version. You will receive an acknowledgement and a coordinated disclosure timeline.
+
+## Supported versions
+
+Only the latest release receives security fixes. DBLion is pre-1.0: `0.1.0` is supported; older commits are not.
 
 ## Safety invariants
 
