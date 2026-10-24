@@ -13,6 +13,7 @@ import {
 import type { AIMode, ConnectionConfig } from '@shared/types'
 import { accessModeLabel, accessModeOf, isReadOnlyAccess, readOnlyEnforcementNote } from '@shared/access'
 import { THEMES } from '../themes'
+import brandIcon from '../assets/icon.ico'
 
 interface Props {
   connections: ConnectionConfig[]
@@ -72,9 +73,9 @@ export default function TopBar({
   return (
     <header className="topbar">
       <div className="topbar__brand">
-        <div className="brand-mark" aria-hidden="true">
-          DL
-        </div>
+        <span className="brand-mark" aria-hidden="true">
+          <img src={brandIcon} alt="" draggable={false} />
+        </span>
         <div className="brand-copy">
           <div className="logo">
             DB<span>Lion</span>
