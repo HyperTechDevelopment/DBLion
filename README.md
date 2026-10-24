@@ -1,95 +1,169 @@
-# DBLion — the guarded AI database IDE
+<p align="center">
+  <img src="./docs/assets/hero.svg" width="100%" alt="DBLion — the guarded AI database IDE. The AI proposes. You execute." />
+</p>
 
-DBLion is the guarded AI database IDE: schema-aware SQL, performance diagnosis and routines, with a human in control of every execution. It ships a desktop Electron app with a React UI, a provider registry for SQL and NoSQL databases, an AI profile system, schema-aware SQL autocomplete, an ER graph, skills and a strict permission model.
+<div align="center">
+  <p>
+    <a href="README.md"><strong>English</strong></a> ·
+    <a href="README.pt-BR.md">Português (BR)</a>
+  </p>
+  <p>
+    <a href="./ROADMAP.md"><img src="https://img.shields.io/badge/version-0.1.0-6d28d9?style=flat-square" alt="Version 0.1.0" /></a>
+    <a href="./ROADMAP.md"><img src="https://img.shields.io/badge/status-pre--1.0-f59e0b?style=flat-square" alt="Pre-1.0" /></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a34a?style=flat-square" alt="MIT license" /></a>
+    <img src="https://img.shields.io/badge/platform-Windows%20x64-2563eb?style=flat-square" alt="Windows x64" />
+    <img src="https://img.shields.io/badge/stack-Electron%20%2B%20React%20%2B%20TypeScript-0f172a?style=flat-square" alt="Electron, React and TypeScript" />
+  </p>
+</div>
 
-Status: 0.1.0, pre-1.0. The safety model and multi-engine adapters are unit-tested; live engine validation is described in [CONTRIBUTING.md](./CONTRIBUTING.md).
+<p align="center">
+  <img src="./docs/assets/dblion-app.png" width="100%" alt="DBLion 0.1.0 maximized: workspace with SQL Editor, read-only badge, connections sidebar and guard toolbar" />
+</p>
 
-## Run
+<p align="center"><sub>DBLion 0.1.0 fullscreen — SQL workspace, guarded execution, plans and schema tools. AI proposes, only you run.</sub></p>
 
-```powershell
-npm install
+---
+
+> **Status: 0.1.0, pre-1.0.** The safety model, adapters and AI context pipeline are covered by automated tests. Live validation against each database engine is the remaining release gate. See [ROADMAP.md](./ROADMAP.md).
+
+## Contents
+
+| Get started | Go deeper |
+| --- | --- |
+| [Quick start](#quick-start) · [Supported databases](#supported-databases) · [What you can do](#what-you-can-do) | [Safety model](#safety-model) · [AI](#ai) · [Architecture](#architecture) |
+| [Development and tests](#development-and-tests) · [Project layout](#project-layout) | [Status and roadmap](#status-and-roadmap) · [Documentation](#documentation) |
+
+## At a glance
+
+| Principle | What it means |
+| --- | --- |
+| **Human in control** | The AI drafts SQL, explains plans and diagnoses; only a person runs a statement. |
+| **Multi-engine** | PostgreSQL, MySQL/MariaDB, SQL Server, Firebird, SQLite, MongoDB and Redis behind one adapter contract. |
+| **Guarded reads** | AI-originated reads use a database-enforced read-only mode or transaction where available. |
+| **Inspectable egress** | The exact provider payload, schema blocks and sampled data are visible before they leave the machine. |
+
+## Quick start
+
+Requirements: Node.js 22 or newer, npm, and a desktop session. The packaged installer currently targets Windows x64.
+
+1. Install and open the studio:
+```bash
+npm ci
 npm run dev
 ```
+2. Click **Add connection**, pick your engine, test and save.
+3. Write SQL or ask the copilot, review the proposal, then press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to run — nothing executes without you.
 
-Build and package:
+Build the unpacked app:
 
-```powershell
+```bash
 npm run build
 npm run dist
 ```
 
-The packaged app is written to `release/win-unpacked/DBLion.exe`.
+Build the Windows installer:
 
-## Databases
+```bash
+npx electron-builder --win nsis
+```
 
-- PostgreSQL
-- MySQL / MariaDB
-- SQL Server
-- Firebird (`node-firebird`, default port 3050, database path or alias, connection charset via `lc_ctype`, query cancel/timeout, estimated plan, table and column comments)
-- SQLite (`sql.js`)
-- MongoDB
-- Redis
+Artifacts are written to `release/`. The installer is `release/DBLion Setup <version>.exe`. That directory, `out/` and `node_modules/` are generated and ignored by Git.
 
-Every connection goes through the same `DbAdapter` interface: connect, query, list tables, describe table, build a schema graph and build AI context. Adding a database means adding an adapter and a case in `src/main/db/index.ts`.
+## Supported databases
 
-Firebird metadata is read from the `RDB$` system tables, including columns, primary keys and foreign keys. The connection wizard accepts a Jaybird URL such as `jdbc:firebirdsql://host:3050/sample?encoding=ISO8859` and fills host, port, database and encoding; `ISO8859` is normalized to `ISO8859_1` before being sent as `isc_dpb_lc_ctype`.
+| Engine | Query | Table browser | Catalog / DDL | Estimated plan | Row edit | CSV import |
+| --- | --- | --- | --- | --- | --- | --- |
+| PostgreSQL | Yes | Yes | Yes | Yes, plus `ANALYZE` | Yes | Yes |
+| MySQL / MariaDB | Yes | Yes | Yes | Yes, plus `ANALYZE` | Yes | Yes |
+| SQL Server | Yes | Yes | Yes | Yes, `SHOWPLAN_TEXT` | Yes | No |
+| Firebird | Yes | Yes | Yes | Yes | No | No |
+| SQLite | Yes | Yes | Yes | Yes, `EXPLAIN QUERY PLAN` | Yes | Yes |
+| MongoDB | Documents | Collections | — | — | — | — |
+| Redis | Commands | Keys | — | — | — | — |
 
-Estimated plans use `EXPLAIN` on Firebird 6+ and `isc_info_sql_get_plan` on 2.5–5 when the driver exposes the internal prepare path; `EXPLAIN ANALYZE` is never offered. Query timeout is a real server-side cancel (`op_cancel`, Firebird 2.5+) rather than an abandoned client promise. Table and column comments are included in the AI schema context as untrusted data.
+Notes:
 
-See [ROADMAP.md](./ROADMAP.md) for the open workstreams, [docs/multi-db-matrix.md](./docs/multi-db-matrix.md) for the per-engine capability matrix, and [CONTRIBUTING.md](./CONTRIBUTING.md) for the adapter contract and checks.
+- **Firebird plans** use native `EXPLAIN` on 6+ and `isc_info_sql_get_plan` on 2.5–5 when the driver exposes it. `EXPLAIN ANALYZE` is never offered for Firebird.
+- **SQL Server plans** use `SHOWPLAN_TEXT` on a transaction-pinned connection; `ANALYZE` would execute the query and is not offered.
+- **Firebird row editing and CSV import** are disabled until the adapter has commit/rollback transactions. Ordinary queries, catalog, DDL, diff and migrations are enabled.
+- **SQL Server CSV import** is disabled because the adapter has no atomic transaction path. Row edits are not atomic with the read they were based on.
+- **Sessions** are available for PostgreSQL, MySQL and SQL Server. Session termination uses a dedicated IPC and token, never free SQL.
+- **Read-only enforcement** is database-level for PostgreSQL, MySQL, SQLite and Firebird; SQL Server uses `ApplicationIntent=ReadOnly` when available; MongoDB and Redis rely on the app guard. Database grants remain the final boundary.
 
-## Data for debugging
+## Architecture
 
-The AI panel's **Data** control attaches database evidence to one request, never automatically:
+```mermaid
+flowchart LR
+  UI["React renderer"] -->|"typed IPC"| MAIN["Electron main"]
+  MAIN --> GUARD["SQL guard + tokens"]
+  GUARD --> ADAPTERS["Database adapters"]
+  ADAPTERS --> DB[("PostgreSQL · MySQL · SQL Server<br/>Firebird · SQLite · MongoDB · Redis")]
+  MAIN --> CTX["Schema + request context"]
+  CTX --> AI["AI provider"]
+  AI -.->|"proposal only"| UI
+```
 
-- **Column profile** sends row counts, null counts, distinct counts, min/max and the top five values as truncated hashes. Columns whose names look like PII are redacted.
-- **Sample rows** sends at most 25 rows from one table, inside a database read-only transaction. PII-named columns become `[redacted]` and PII-shaped values are masked before the payload is stored.
-- Both modes return the exact masked block for review, wrapped in `<untrusted-data>`, and issue a single-use 60-second token. The token is consumed by the next chat request; a preview does not spend it.
-- MongoDB and Redis are excluded because they have no SQL catalog or column types.
+The AI receives context and returns text. It has no path to the database; the only way a statement reaches an engine is a human action through the guard.
+
+## What you can do
+
+### SQL workspace
+
+- Multiple query tabs, `Ctrl+Enter` to run the selection or the whole editor, and a persistent 200-entry history.
+- Results show the first 5,000 rows with a truncation warning; export saves CSV, JSON or SQL `INSERT` through a native dialog.
+- Server-side pagination, filters and row editing in the Table Browser. Row updates are previewed, conflict-checked and confirmed natively.
+- Estimated plan tree with cost, rows and warnings. `EXPLAIN ANALYZE` is available only where it can run inside a read-only transaction (PostgreSQL and MySQL).
+- CSV import with column mapping, type coercion, a content hash and a single transaction. Limits: 5 MB / 5,000 rows.
+- Schema explorer with tables, views, routines, triggers, indexes, generators and domains where the engine exposes them.
+
+### Interface
+
+- Step-based connection wizard (Engine → General → Options → Review) with a generated URL preview, test connection and native save flow.
+- AI Providers master–detail screen with profile cards, provider setup hints, model/context presets and credential handling.
+- SQL tabs, schema explorer, ER graph, plan tree, table browser and AI panel in one window.
+- Bundled themes and fonts; no remote font fetch.
+
+### Schema tools
+
+- Catalog and DDL inspection for every SQL engine. Reconstructed table DDL is marked with a review warning.
+- Schema diff between two connections of the same engine, producing a review-only migration.
+- Migration files stored as versioned `.sql` documents. Saving never executes anything.
+
+### AI copilot
+
+- Chat with streaming, SQL blocks and a reviewable **Run manually** action.
+- Schema-aware Monaco autocomplete and optional AI inline completion.
+- Schema context trimmed to the request; table ranking uses names, column names and comments.
+- ER graph, skills and context preview.
+
+## Safety model
+
+| Layer | Control |
+| --- | --- |
+| **Execution** | The AI never executes and has no tool calling, MCP or shell access. Proposed SQL runs only after a human action. |
+| **Read-only** | Global read-only is on by default. Each profile has its own access mode, applied when the session opens. |
+| **AI reads** | PostgreSQL, MySQL and Firebird use a read-only transaction; SQLite uses `PRAGMA query_only`. SQL Server falls back to the classifier and app guard. |
+| **Writes** | The toolbar toggle, a non-read AI mode and a native confirmation are required. The token is single-use and bound to the exact SQL or row identity. |
+| **Authority** | The main process resolves SQL safety, schema context and secrets. The renderer cannot supply schema text or claim a write is allowed. |
+| **Secrets** | OS encryption via Electron `safeStorage`; passwords, API keys and SSH private keys never reach the renderer, logs or audit entries. |
+| **Renderer** | `sandbox`, `contextIsolation`, no `nodeIntegration`, CSP, blocked navigation and an external-link allowlist for `http:`, `https:` and `mailto:`. |
+| **Untrusted input** | Schema, comments, skills and sampled data stay inside `<untrusted-*>` blocks; delimiter spoofing is neutralized and security rules come first. |
+| **Egress** | No attribution or telemetry headers. The Context panel shows the exact payload; PII masking is optional per profile. |
+| **Data sampling** | Per-request approval, PII masking, row caps and a 60-second single-use token. |
+| **Final boundary** | Database grants. Use a least-privilege database user for read-only work. |
+
+Read [SECURITY.md](./SECURITY.md) for the full invariant list and the disclosure process.
 
 ## AI
 
-Profiles support:
+Supported providers: OpenAI, Anthropic, Ollama, OpenRouter and custom OpenAI-compatible endpoints.
 
-- OpenAI
-- Anthropic
-- Ollama
-- OpenRouter
-- Custom OpenAI-compatible endpoints
+Each profile controls the base URL, model, API key, context window, temperature, output limit, timeout, streaming, schema sharing, PII masking and custom instructions. The AI panel exposes the exact system prompt and conversation through **Context**; the preview never contains the API key.
 
-Each profile controls the base URL, model, API key, context window, temperature, max output tokens, timeout, streaming, schema sharing and custom instructions. API keys and connection passwords are encrypted with Electron `safeStorage` (Windows DPAPI) and are never written as plaintext.
+Autocomplete and inline completion resolve schema from the **live connection in the main process**. The renderer cannot choose or alter the schema sent to the provider, and the AI autocomplete toggle is enforced in main.
 
-AI features:
-
-- Chat with streaming and SQL blocks that can be inserted or executed.
-- Schema-aware autocomplete in Monaco (tables, columns, keywords).
-- AI inline SQL completion (toggleable in Settings → Safety) uses the schema of the currently connected database, resolved in the main process from the live connection; the renderer cannot supply or alter the schema text sent to the provider. The toggle is enforced in main, not only hidden in the UI.
-- Schema context trimming and token budgeting.
-- ER graph built from primary/foreign keys (collections/keys for MongoDB and Redis).
-- Skills with automatic context selection.
-
-## Interface
-
-- **Connection wizard** inspired by DBeaver's multi-page connection dialog: Engine → General → Options → Review, with a step rail, engine summary, generated URL preview, test connection and a native save flow.
-- **AI Providers master–detail screen**: profile cards, active profile, duplicate/delete/test actions, provider tiles with setup hints, grouped credentials, model/context presets, generation controls and custom instructions.
-- **Chat**: markdown rendering, SQL code cards with Copy/Insert/Run, context chips, retry-friendly errors, streaming caret, jump-to-latest, prompt suggestions and a `/` skills picker with keyboard navigation.
-- **Themes**: Dracula, Aura, Matrix, Neon, PyCharm, Tokyo Night, Nord, Catppuccin, Gruvbox, Rosé Pine, One Dark, Solarized Light, DBLion Dark and Light, all sharing the same token contract.
-- **Typography**: bundled Inter Variable, Space Grotesk Variable and JetBrains Mono Variable (no remote font fetch).
-
-## Query workspace
-
-- Multiple query tabs with SQL persisted between sessions in the renderer.
-- `Ctrl+Enter` runs the current selection, or the full editor when nothing is selected.
-- Persistent query history (200 entries) with timestamp, connection, rows, duration and error; click an entry to restore its SQL.
-- Results display the first 5,000 rows with a truncation warning; export saves CSV, JSON or SQL `INSERT` statements through a native save dialog.
-- Schema explorer lists tables and views for the active connection, with filter, refresh and click-to-open.
-- Table Browser opens a table with server-side pagination and filter, editable cells when the table has a primary key, a generated `UPDATE` preview, optimistic conflict check, and CSV/`INSERT` export for the visible page.
-- Row edits require the write toggle, a non-read AI mode, and a native confirmation bound to the row identity and changed values. Tables without a primary key and views are read-only.
-- Explain opens a local database plan tree with cost, rows, warnings and optional `ANALYZE`; `ANALYZE` executes the SELECT and requires its own native confirmation. No AI is involved.
-- CSV import picks a local file, previews the mapped columns, coerces supported types, and applies every row in one transaction. Limits are 5 MB / 5,000 rows; the token binds to the file hash, mapping, delimiter and null settings.
-- Sessions lists PostgreSQL/MySQL/SQL Server sessions. Cancelling a query or terminating a session requires `full` mode and a dedicated confirmation token; raw `KILL`/`pg_terminate_backend` SQL is blocked.
-
-## Skills
+<details>
+<summary><strong>Skills discovery paths</strong></summary>
 
 DBLion discovers `SKILL.md` files recursively from:
 
@@ -101,49 +175,98 @@ DBLion discovers `SKILL.md` files recursively from:
 - `~/.opencode/skills`
 - project `.agents/skills` and `.claude/skills`
 
-Selected skills are injected into the system prompt. With auto-select enabled, the last user message is matched against skill names and descriptions and the best matches are added automatically. Skill reads are restricted to the discovered roots.
+Selected skills are injected into the system prompt as untrusted context. With auto-select enabled, the last user message is matched against skill names and descriptions. Skill reads are restricted to the discovered roots.
 
-## Schema catalog, DDL, diff and migrations
+</details>
 
-- The schema explorer exposes tables, views, materialized views, functions, procedures, triggers and indexes for PostgreSQL, MySQL, SQLite, SQL Server and Firebird (Firebird also lists generators and domains).
-- Clicking an object loads its DDL. Tables with reconstructed DDL (SQL Server and Firebird) are marked with review warnings.
-- **Diff** compares two connected schemas of the same database kind, shows added/removed/changed objects and generates a review-only migration. Table changes are intentionally not converted into destructive ALTERs automatically.
-- Migrations are stored as versioned `.sql` files under `%APPDATA%\dblion\migrations` and listed in the Schema tools modal. Saving a migration never executes it.
-- Catalog inspection is bounded to 1,000 objects and diff to 150 objects per side; the UI reports truncation.
+## Data for debugging
 
-## Security model
+The AI panel’s **Data** control attaches evidence to one request, never automatically:
 
-- Global **read-only** is on by default.
-- A connection profile's access mode is applied when the session opens. Changing it closes the live connection (and audits the change), so a profile switched to read-only never keeps a writable session alive.
-- The toolbar **Allow writes** toggle is required for any write.
-- AI modes:
-  - `read`: every write is blocked.
-  - `edit`: DML allowed with confirmation; DDL blocked.
-  - `full`: DDL allowed, always with a native confirmation.
-- Every SQL write asks for an OS-native confirmation and receives a short-lived, single-use token bound to the connection and exact SQL.
-- Row updates, CSV imports, `EXPLAIN ANALYZE` and session kills use dedicated token kinds; their details bind table/row identity, file hash, SQL or session/mode. Session kill is never accepted through free SQL.
-- Renderer isolation: `sandbox: true`, `contextIsolation`, no `nodeIntegration`, CSP, navigation blocked, permission requests denied.
-- The window may only navigate to its own document (including redirects). External links open in the OS browser only for `http:`, `https:` and `mailto:`; `file:` and custom schemes are denied, so a local document cannot inherit the preload bridge.
-- `state:get` returns a public projection: passwords, API keys, SSH passwords and private keys never cross into the renderer. Existing secrets are preserved on profile/connection patches and can be replaced explicitly.
-- Secrets are stored with OS encryption; plaintext fallback is disabled.
-- Redis commands are classified: reads bypass the write switch, writes require `edit` plus confirmation, and destructive commands (`FLUSHALL`, `FLUSHDB`, `CONFIG`, `SCRIPT`, `EVAL`, etc.) require `full`.
-- TLS verifies server certificates (`rejectUnauthorized: true`) and supports a CA plus client certificate/key. SSH tunnels forward TCP through a bastion and keep SSH secrets out of state.
-- Read queries can be limited server-side and receive a statement/query timeout. PostgreSQL, MySQL, SQL Server and Firebird support cancellation; PostgreSQL, MySQL and SQLite support explicit begin/commit/rollback.
-- `EXPLAIN ANALYZE` runs inside a PostgreSQL `READ ONLY` transaction or MySQL `START TRANSACTION READ ONLY` and is blocked inside an existing transaction. Side-effect functions such as `pg_sleep`, `nextval`, `setval`, `dblink` and `load_file` are denied by the classifier. Database grants remain the final boundary; use a least-privilege database user.
-- AI calls run in the main process, never in the renderer. Schema context is resolved in main; a renderer-supplied `schemaContext` is ignored, so the UI cannot spoof the model's view of the database.
-- AI egress sends only authentication and protocol headers. No `HTTP-Referer`, `X-Title` or any other attribution/telemetry metadata is attached to provider requests.
-- Schema metadata and skill files are untrusted input: the system prompt puts the security rules first, then wraps schema/skill text in `<untrusted-schema>` / `<untrusted-skill>` blocks and states that instructions found inside names, comments, defaults, skill files or tool output are data. Spoofed closing tags inside that text are neutralized.
-- Large databases are not sent as an alphabetical prefix: main ranks table names against the user's request (with a small PT-BR synonym set) and describes only the matches. If column metadata still cannot be read, the warning reaches the UI and the model receives table names instead of nothing.
-- AI never executes SQL and has no tool calling, MCP or shell access. Proposed SQL renders as a reviewable block; it runs only when a human clicks **Run manually** (AI panel) or Run (editor), through the same write-toggle, AI-mode and native-confirmation gates as typed SQL.
-- SQL that originated from AI and classifies as a read runs inside a database-enforced read-only transaction (PostgreSQL `BEGIN TRANSACTION READ ONLY`, MySQL `START TRANSACTION READ ONLY`, SQLite `PRAGMA query_only`, Firebird `isc_tpb_read`), so a function or stored procedure with side effects cannot write even though the statement looks like a `SELECT`. If an explicit transaction is already open on PostgreSQL or MySQL, the run is refused instead of silently dropping the fence. SQL Server, MongoDB and Redis have no transaction-level read-only switch; there the classifier and guard remain the boundary.
-- The AI panel's **Context** control asks main for `ai:context-preview`: the exact system prompt and conversation the provider would receive, whether schema/skills are included, their sizes, and whether PII masking applied. It never contains the API key.
-- Optional per-profile **Mask emails, CPF/CNPJ, cards and phone numbers in context** redacts PII-shaped values from schema and skill context before sending. It is off by default (compatibility) and can also redact identifiers or defaults that merely look like PII, which may reduce SQL accuracy. Schema metadata still leaves the machine when "Send schema context" is enabled — masking reduces, but does not remove, that egress.
-- AI safety regression suite: `node --import ./scripts/lib/ts-alias-register.mjs scripts/ai-safety.test.mjs`.
+| Mode | What the provider receives | Guardrails |
+| --- | --- | --- |
+| **Column profile** | Row counts, nulls, distinct counts, min/max and the top five values as truncated hashes | PII-named columns are redacted |
+| **Sample rows** | At most 25 rows from one table | Read-only where available, PII masking and a 60-second single-use token |
+
+Both modes show the exact masked block and issue a single-use token. A preview does not consume the token; the next chat request does. MongoDB and Redis are excluded because they have no SQL catalog or column types.
+
+PostgreSQL, MySQL, SQLite and Firebird enforce read-only at the database layer. SQL Server has no transaction-level read-only switch, so the generated SELECT is still gated by the classifier and the app guard.
 
 ## Data location
 
-Electron stores app data under `%APPDATA%\dblion`, with `dblion-state.json` and `dblion-secrets.json` (encrypted values).
+The app stores runtime data in Electron's `userData` directory. On Windows that is `%APPDATA%\dblion`; on macOS and Linux, use the Electron `userData` path. It contains `dblion-state.json`, `dblion-secrets.json` (encrypted values), `dblion-audit.jsonl` and the `migrations/` directory. None of it is committed to the repository.
+
+## Development and tests
+
+| Area | Command |
+| --- | --- |
+| Typecheck | `npm run typecheck` |
+| SQL safety | `npm run test:safety` |
+| Renderer boundary | `npm run test:security` |
+| Firebird adapter | `npm run test:firebird` |
+| Firebird catalog/DDL | `npm run test:firebird-catalog` |
+| Serial queue | `npm run test:serial-queue` |
+| Multi-database parity | `npm run test:multi-db` |
+| Data safety | `npm run test:ai-data` |
+| Read-only fences | `npm run test:read-only` |
+| AI safety | `node --import ./scripts/lib/ts-alias-register.mjs scripts/ai-safety.test.mjs` |
+| Build | `npm run build` |
+
+Live engine checks are optional and read their URLs from the environment:
+
+```bash
+DBLION_TEST_PG_URL=postgres://user:pass@host:5432/db
+DBLION_TEST_MYSQL_URL=mysql://user:pass@host:3306/db
+DBLION_TEST_MSSQL_URL=sqlserver://user:pass@host:1433/db
+DBLION_TEST_FIREBIRD_URL=firebirdsql://user:pass@host:3050/path/to/db.fdb?encoding=UTF8
+```
+
+When a URL is absent, the check reports `skipped` instead of passing. The SQL Server test expects a role that can create its probe tables; otherwise it reports why it skipped. Firebird live coverage includes connection, write refusal, catalog, column index and estimated plan.
+
+## Project layout
+
+```text
+src/main       Electron main: adapters, safety gates, AI context, storage
+src/preload    Typed contextBridge surface
+src/renderer   React UI, Monaco editor, schema explorer, AI panel
+src/shared     Types, SQL classification, access policy, Firebird URL helpers
+scripts        Automated test suites and test-only helpers
+docs           Capability matrix, Firebird notes and README assets
+```
+
+Every database implements `DbAdapter` in `src/main/db/types.ts`. Adding one means an adapter, a capability entry in `src/main/db/index.ts` and contract tests. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Status and roadmap
+
+DBLion is **0.1.0, pre-1.0**. The safety invariants and the multi-engine adapters are unit-tested; the remaining release gate is live validation on real servers, especially Firebird 2.5/3/4/5/6.
+
+Current known limits:
+
+- Firebird row editing and CSV import await adapter transactions.
+- Firebird table DDL is reconstructed and marked review-only; function DDL is not generated.
+- SQL Server CSV import is disabled, and its row edits are not atomic with their read.
+- The installer is unsigned and there is no auto-update yet.
+- The Windows installer is the packaged target; other desktop platforms are not release-tested.
+
+See [ROADMAP.md](./ROADMAP.md) for the open workstreams and release gates.
+
+## Documentation
+
+| Document | What it covers |
+| --- | --- |
+| [ROADMAP.md](./ROADMAP.md) | Open work, P0 release gates and the definition of done |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Setup, checks, adapter contract, invariants and release checklist |
+| [SECURITY.md](./SECURITY.md) | Safety invariants and private disclosure |
+| [LICENSE](./LICENSE) | MIT license |
+
+## Contributing
+
+Issues and pull requests are welcome. Keep changes small, run the checks above, and do not weaken the execution gates without a design discussion. Do not commit local state, credentials or generated build output.
 
 ## License
 
-MIT. See [LICENSE](./LICENSE).
+MIT — `SPDX-License-Identifier: MIT`. See [LICENSE](./LICENSE).
+
+Copyright (c) 2026 DBLion contributors. The license text is the canonical MIT text, unmodified. If you fork or redistribute, keep the copyright and permission notices in all copies or substantial portions.
+
+<div align="center"><sub>DBLion 0.1.0 · guarded execution · multi-engine SQL</sub></div>
