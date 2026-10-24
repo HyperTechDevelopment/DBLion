@@ -25,5 +25,7 @@ selftest-*
 .DS_Store
 Thumbs.db
 
-# Documentacao local (fora do versionamento)
-docs/
+# Documentacao local (notas, fora do versionamento)
+# README assets continuam versionados para o GitHub renderizar
+docs/*
+!docs/assets/

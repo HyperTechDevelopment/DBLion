@@ -25,7 +25,9 @@ jobs:
       - run: npm run test:security
       - run: npm run test:firebird
       - run: npm run test:firebird-catalog
+      - run: npm run test:serial-queue
       - run: npm run test:multi-db
       - run: npm run test:ai-data
       - run: npm run test:read-only
+      - run: node --import ./scripts/lib/ts-alias-register.mjs scripts/ai-safety.test.mjs
       - run: npm run build
