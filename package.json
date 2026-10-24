@@ -1,0 +1,102 @@
+{
+  "name": "dblion",
+  "version": "0.1.0",
+  "description": "DBLion - the guarded AI database IDE",
+  "main": "./out/main/index.js",
+  "license": "MIT",
+  "author": "DBLion",
+  "overrides": {
+    "dompurify": "3.4.17"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:safety": "node --experimental-strip-types scripts/sql-safety.test.mjs",
+    "test:read-only": "node --import ./scripts/lib/ts-alias-register.mjs scripts/read-only-enforcement.test.mjs",
+    "test:security": "node --import ./scripts/lib/ts-alias-register.mjs scripts/app-security.test.mjs",
+    "test:firebird": "node --import ./scripts/lib/ts-alias-register.mjs scripts/firebird-url.test.mjs",
+    "test:serial-queue": "node --experimental-strip-types scripts/serial-queue.test.mjs",
+    "test:ai-data": "node --import ./scripts/lib/ts-alias-register.mjs scripts/ai-data.test.mjs",
+    "test:firebird-catalog": "node --experimental-strip-types scripts/firebird-catalog.test.mjs",
+    "test:multi-db": "node --import ./scripts/lib/ts-alias-register.mjs scripts/multi-db.test.mjs",
+    "dist": "electron-builder --win dir",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "@monaco-editor/react": "^4.7.0",
+    "@xyflow/react": "^12.12.0",
+    "lucide-react": "^1.61.0",
+    "monaco-editor": "^0.57.0",
+    "mongodb": "^7.7.0",
+    "mssql": "^12.7.11",
+    "mysql2": "^3.24.6",
+    "node-firebird": "2.19.0",
+    "pg": "^8.23.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-markdown": "^10.1.0",
+    "redis": "^6.3.0",
+    "remark-gfm": "^4.0.1",
+    "sql.js": "^1.15.1",
+    "ssh2": "^1.17.0"
+  },
+  "devDependencies": {
+    "@types/mssql": "^12.3.0",
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/sql.js": "^1.4.11",
+    "@types/ssh2": "^1.15.5",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "42.11.18",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^6.0.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  },
+  "build": {
+    "appId": "com.dblion.app",
+    "productName": "DBLion",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/sql.js/dist/*.wasm"
+    ],
+    "extraResources": [
+      {
+        "from": "icon.ico",
+        "to": "icon.ico"
+      }
+    ],
+    "electronDist": "node_modules/electron/dist",
+    "electronVersion": "42.11.18",
+    "npmRebuild": false,
+    "buildDependenciesFromSource": false,
+    "win": {
+      "icon": "icon.ico",
+      "target": [
+        "dir"
+      ],
+      "signAndEditExecutable": true,
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico"
+    }
+  }
+}

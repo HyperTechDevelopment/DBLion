@@ -1,0 +1,29 @@
+node_modules/
+out/
+release/
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+
+# Local runtime state and secrets
+.env
+.env.*
+dblion-state.json
+dblion-secrets.json
+dblion-audit.jsonl
+selftest-*
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Agent/editor scratch
+.commandcode/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Documentacao local (fora do versionamento)
+docs/
