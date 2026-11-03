@@ -25,7 +25,11 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const read = async (relative) => fs.readFile(path.join(projectRoot, relative), 'utf8')
+
+// Checkouts on Windows (core.autocrlf=true) deliver CRLF. Normalising here keeps
+// the source-text guards below independent of the platform and of git settings.
+const read = async (relative) =>
+  (await fs.readFile(path.join(projectRoot, relative), 'utf8')).replace(/\r\n/g, '\n')
 
 // The aliases are registered by --import (scripts/lib/ts-alias-register.mjs),
 // so the production modules below load with their real '@shared/*' imports.
@@ -599,7 +603,9 @@ check('AI SQL runs only from one click handler in the panel (no effect/shortcut)
   // Keyboard input sends messages only — it never runs SQL.
   const keyStart = panel.indexOf('function onKeyDown(')
   assert.ok(keyStart > 0, 'the panel still has a keydown handler')
-  const keyHandler = panel.slice(keyStart, panel.indexOf('\n  }\n', keyStart))
+  const keyEnd = panel.indexOf('\n  }\n', keyStart)
+  assert.ok(keyEnd > keyStart, 'the keydown handler body is delimited')
+  const keyHandler = panel.slice(keyStart, keyEnd)
   assert.ok(keyHandler.length > 0, 'keydown handler body is readable')
   assert.ok(!/runApproved\(|onRun\(/.test(keyHandler), 'no keyboard shortcut runs AI SQL')
 
